@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -73,7 +74,7 @@ def profile_view(request, user_pk):
             follower = Follower(user=user, follows=profile)
             follower.save()
 
-        return HttpResponseRedirect(reverse("profile_view", args=[user_pk]))
+        return HttpResponseRedirect(reverse("profile", args=[user_pk]))
 
     else:
         user = request.user
@@ -102,6 +103,18 @@ def profile_view(request, user_pk):
             "follower_count": follower_count,
             "following_count": following_count
         })
+
+
+@login_required
+def following_view(request):
+    user = request.user
+    people_you_follow = Follower.objects.filter(user=user).values("follows")
+
+    posts = Post.objects.filter(user__in=people_you_follow)
+
+    return render(request, "network/following.html", {
+        "posts": posts,
+    })
 
 
 def login_view(request):

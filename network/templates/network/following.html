@@ -1,0 +1,27 @@
+{% extends "network/layout.html" %}
+
+{% block title %}
+    People you Follow
+{% endblock %}
+
+{% block body %}
+    <h1 class="my-2 mx-4">People you Follow</h1>
+
+    {% for post in posts %}
+        <div class="m-2 card">
+            <div class="card-body">
+                <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title "><strong>{{ post.user }}</strong></h4>
+                </a>
+                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                <p class="card-text mb-1">{{ post.content }}</p>
+                <div class="d-flex" style="height: 1.85rem;">
+                    <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
+                    <div class="align-self-center m-2">{{ post.likes }}</div>
+                </div>
+                <button class="btn btn-primary mt-2">Comment</button>
+            </div>
+        </div>
+    {% empty %}
+        <h5>No Posts</h5>
+    {% endfor %}
+{% endblock %}

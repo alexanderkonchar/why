@@ -17,10 +17,11 @@
     </div>
 
     <div class="m-4">
-        <form action="{% url 'profile_view' profile.pk %}" method="POST">
+        <form action="{% url 'profile' profile.pk %}" method="POST">
             {% csrf_token %}
 
             {% if user.pk == profile.pk %}
+                <a class="link-dark" href="{% url 'following' %}">People you Follow</a>
             {% elif user.is_anonymous %}
                 <input class="btn btn-secondary" disabled type="submit" value="Log in to Follow">
             {% elif is_follower %}

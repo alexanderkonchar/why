@@ -33,7 +33,7 @@
     {% for post in posts %}
         <div class="m-2 card">
             <div class="card-body">
-                <a class="link-dark" href="{% url 'profile_view' post.user.pk %}"><h4 class="card-title "><strong>{{ post.user }}</strong></h4>
+                <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title "><strong>{{ post.user }}</strong></h4>
                 </a>
                 <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
                 <p class="card-text mb-1">{{ post.content }}</p>
