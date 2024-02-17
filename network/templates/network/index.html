@@ -8,32 +8,35 @@
 
     <h1 class="my-2 mx-4">All Posts</h1>
 
-    <div class="m-2 p-2 border rounded">
-        <form action="{% url 'index' %}" method="POST">
-            {% csrf_token %}
-            <h5>New Post</h5>
-            <textarea class="form-control" name="content" cols="30"
-                      rows="3"></textarea>
+    {% if not previous_page_number %}
+        <div class="m-2 p-2 border rounded">
+            <form action="{% url 'index' %}" method="POST">
+                {% csrf_token %}
+                <h5>New Post</h5>
+                <textarea class="form-control" name="content" cols="30"
+                          rows="3"></textarea>
 
-            {% if message %}
-                <div class="my-2 alert alert-{{ alert }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
+                {% if message %}
+                    <div class="my-2 alert alert-{{ alert }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
 
-            {% if user.is_anonymous %}
-                <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">
-            {% else %}
-                <input class="btn btn-primary mt-2" type="submit" value="Post">
-            {% endif %}
-        </form>
-    </div>
+                {% if user.is_anonymous %}
+                    <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">
+                {% else %}
+                    <input class="btn btn-primary mt-2" type="submit" value="Post">
+                {% endif %}
+            </form>
+        </div>
+    {% endif %}
 
     {% for post in posts %}
         <div class="m-2 card">
             <div class="card-body">
-                <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title "><strong>{{ post.user }}</strong></h4>
+                <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title ">
+                    <strong>{{ post.user }}</strong></h4>
                 </a>
                 <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
                 <p class="card-text mb-1">{{ post.content }}</p>
@@ -47,4 +50,24 @@
     {% empty %}
         <h5>No Posts</h5>
     {% endfor %}
+
+    {% if num_pages.stop > 0 %}
+        <nav aria-label="Page navigation for posts">
+            <ul class="pagination m-2">
+                {% if previous_page_number %}
+                    <li class="page-item"><a class="page-link" href="{% url 'index/page' previous_page_number %}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for page in num_pages %}
+                    <li class="page-item"><a class="page-link" href="{% url 'index/page' page %}">{{ page }}</a></li>
+                {% endfor %}
+
+                {% if next_page_number %}
+                    <li class="page-item"><a class="page-link" href="{% url 'index/page' next_page_number %}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
 {% endblock %}

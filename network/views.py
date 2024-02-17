@@ -4,22 +4,43 @@ from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.core.paginator import Paginator, EmptyPage
 
 from .models import User, Post, Follower
 
 
 def index(request):
-    posts = Post.objects.all()
+    return page(request, 1)
+
+
+def page(request, page_number):
     user = request.user
 
+    pages = Paginator(Post.objects.all().order_by("-timestamp"), 10)
+    num_pages = range(1, pages.num_pages + 1)
+
     if request.method == "POST":
-        user = request.user
+        posts = pages.page(1)
+        if posts.has_next():
+            next_page_number = posts.next_page_number()
+        else:
+            next_page_number = None
+        if posts.has_previous():
+            previous_page_number = posts.previous_page_number()
+        else:
+            previous_page_number = None
+
+        posts = posts.object_list
+
         if user.is_anonymous:
             return render(request, "network/index.html", {
                 "posts": posts,
                 "user": user,
                 "alert": "danger",
-                "message": "You must be logged in to post."
+                "message": "You must be logged in to post.",
+                "num_pages": num_pages,
+                "next_page_number": next_page_number,
+                "previous_page_number": previous_page_number
             })
 
         content = request.POST.get('content')
@@ -28,7 +49,10 @@ def index(request):
                 "posts": posts,
                 "user": user,
                 "alert": "danger",
-                "message": "Post content cannot be empty."
+                "message": "Post content cannot be empty.",
+                "num_pages": num_pages,
+                "next_page_number": next_page_number,
+                "previous_page_number": previous_page_number
             })
 
         post = Post(user=user, content=content)
@@ -38,14 +62,37 @@ def index(request):
             "posts": posts,
             "user": user,
             "alert": "success",
-            "message": "Post added successfully!"
+            "message": "Post added successfully!",
+            "num_pages": num_pages,
+            "next_page_number": next_page_number,
+            "previous_page_number": previous_page_number
         })
 
     else:
-        return render(request, "network/index.html", {
-            "posts": posts,
-            "user": user
-        })
+        posts = pages.page(page_number)
+        if posts.has_next():
+            next_page_number = posts.next_page_number()
+        else:
+            next_page_number = None
+        if posts.has_previous():
+            previous_page_number = posts.previous_page_number()
+        else:
+            previous_page_number = None
+
+        posts = posts.object_list
+
+        try:
+            return render(request, "network/index.html", {
+                "posts": posts,
+                "user": user,
+                "num_pages": num_pages,
+                "next_page_number": next_page_number,
+                "previous_page_number": previous_page_number
+            })
+        except EmptyPage:
+            return render(request, "network/error.html", {
+                "error": "404 Page not found."
+            }, status=404)
 
 
 def profile_view(request, user_pk):
