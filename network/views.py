@@ -47,6 +47,21 @@ def index(request):
         })
 
 
+def profile_view(request, user_pk):
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        return render(request, "network/error.html", {
+            "error": "404 User not found."
+        }, status=404)
+
+    posts = Post.objects.filter(user=user).order_by("-timestamp")
+    return render(request, "network/profile.html", {
+        "user": user,
+        "posts": posts
+    })
+
+
 def login_view(request):
     if request.method == "POST":
 

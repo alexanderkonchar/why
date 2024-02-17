@@ -1,0 +1,49 @@
+{% extends "network/layout.html" %}
+
+{% block title %}
+    {{ user.username }}'s Profile
+{% endblock %}
+
+{% block body %}
+    <h1 class="my-2 mx-4">{{ user.username }}</h1>
+
+{#    <div class="m-2 p-2 border rounded">#}
+    {#        <form action="{% url 'index' %}" method="POST">#}
+    {#            {% csrf_token %}#}
+    {#            <h5>New Post</h5>#}
+    {#            <textarea class="form-control" name="content" cols="30"#}
+    {#                      rows="3"></textarea>#}
+    {##}
+    {#            {% if message %}#}
+    {#                <div class="my-2 alert alert-{{ alert }} alert-dismissible fade show" role="alert">#}
+    {#                    {{ message }}#}
+    {#                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
+    {#                </div>#}
+    {#            {% endif %}#}
+    {##}
+    {#            {% if user.is_anonymous %}#}
+    {#                <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">#}
+    {#            {% else %}#}
+    {#                <input class="btn btn-primary mt-2" type="submit" value="Post">#}
+    {#            {% endif %}#}
+    {#        </form>#}
+    {#    </div>#}
+
+    <h4 class="m-2">Posts by {{ user.username }}</h4>
+    {% for post in posts %}
+        <div class="m-2 card">
+            <div class="card-body">
+                <h4 class="card-title "><strong>{{ post.user }}</strong></h4>
+                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                <p class="card-text mb-1">{{ post.content }}</p>
+                <div class="d-flex" style="height: 1.85rem;">
+                    <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
+                    <div class="align-self-center m-2">{{ post.likes }}</div>
+                </div>
+                <button class="btn btn-primary mt-2">Comment</button>
+            </div>
+        </div>
+    {% empty %}
+        <h5>No Posts</h5>
+    {% endfor %}
+{% endblock %}
