@@ -1,35 +1,28 @@
 {% extends "network/layout.html" %}
 
 {% block title %}
-    {{ user.username }}'s Profile
+    {{ profile.username }}'s Profile
 {% endblock %}
 
 {% block body %}
-    <h1 class="my-2 mx-4">{{ user.username }}</h1>
+    <h1 class="my-2 mx-4">{{ profile.username }}</h1>
 
-{#    <div class="m-2 p-2 border rounded">#}
-    {#        <form action="{% url 'index' %}" method="POST">#}
-    {#            {% csrf_token %}#}
-    {#            <h5>New Post</h5>#}
-    {#            <textarea class="form-control" name="content" cols="30"#}
-    {#                      rows="3"></textarea>#}
-    {##}
-    {#            {% if message %}#}
-    {#                <div class="my-2 alert alert-{{ alert }} alert-dismissible fade show" role="alert">#}
-    {#                    {{ message }}#}
-    {#                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
-    {#                </div>#}
-    {#            {% endif %}#}
-    {##}
-    {#            {% if user.is_anonymous %}#}
-    {#                <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">#}
-    {#            {% else %}#}
-    {#                <input class="btn btn-primary mt-2" type="submit" value="Post">#}
-    {#            {% endif %}#}
-    {#        </form>#}
-    {#    </div>#}
+    <div class="m-4">
+        <form action="{% url 'profile_view' profile.pk %}" method="POST">
+            {% csrf_token %}
 
-    <h4 class="m-2">Posts by {{ user.username }}</h4>
+            {% if user.pk == profile.pk %}
+            {% elif user.is_anonymous %}
+                <input class="btn btn-secondary" disabled type="submit" value="Log in to Follow">
+            {% elif follower %}
+                <input class="btn btn-secondary" type="submit" value="Unfollow">
+            {% else %}
+                <input class="btn btn-primary" type="submit" value="Follow">
+            {% endif %}
+        </form>
+    </div>
+
+    <h4 class="m-2">Posts by {{ profile.username }}</h4>
     {% for post in posts %}
         <div class="m-2 card">
             <div class="card-body">

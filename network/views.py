@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User, Post
+from .models import User, Post, Follower
 
 
 def index(request):
@@ -48,18 +48,55 @@ def index(request):
 
 
 def profile_view(request, user_pk):
-    try:
-        user = User.objects.get(pk=user_pk)
-    except User.DoesNotExist:
-        return render(request, "network/error.html", {
-            "error": "404 User not found."
-        }, status=404)
+    if request.method == "POST":
+        user = request.user
+        follows = User.objects.get(pk=user_pk)
 
-    posts = Post.objects.filter(user=user).order_by("-timestamp")
-    return render(request, "network/profile.html", {
-        "user": user,
-        "posts": posts
-    })
+        if user.is_anonymous:
+            return render(request, "network/error.html", {
+                "error": "You must be logged in to follow a user."
+            })
+        elif not follows:
+            return render(request, "network/error.html", {
+                "error": "User to follow does not exist."
+            })
+        elif user.pk == follows.pk:
+            return render(request, "network/error.html", {
+                "error": "User to follow does not exist."
+            })
+
+        follower = Follower.objects.filter(user=user, follows=follows)
+
+        if follower.exists():
+            follower.delete()
+        else:
+            follower = Follower(user=user, follows=follows)
+            follower.save()
+
+        return HttpResponseRedirect(reverse("profile_view", args=[user_pk]))
+
+    else:
+        user = request.user
+        try:
+            profile = User.objects.get(pk=user_pk)
+        except User.DoesNotExist:
+            return render(request, "network/error.html", {
+                "error": "404 User not found."
+            }, status=404)
+
+        posts = Post.objects.filter(user=profile).order_by("-timestamp")
+
+        if user.is_authenticated:
+            follower = Follower.objects.filter(user=user, follows=profile).exists()
+        else:
+            follower = False
+
+        return render(request, "network/profile.html", {
+            "user": user,
+            "profile": profile,
+            "posts": posts,
+            "follower": follower
+        })
 
 
 def login_view(request):
