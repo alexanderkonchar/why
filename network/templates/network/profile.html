@@ -7,6 +7,15 @@
 {% block body %}
     <h1 class="my-2 mx-4">{{ profile.username }}</h1>
 
+    <div class="d-flex m-2">
+        <div class="m-2">
+            Following {{ following_count }}
+        </div>
+        <div class="m-2">
+            Followers {{ follower_count }}
+        </div>
+    </div>
+
     <div class="m-4">
         <form action="{% url 'profile_view' profile.pk %}" method="POST">
             {% csrf_token %}
@@ -14,7 +23,7 @@
             {% if user.pk == profile.pk %}
             {% elif user.is_anonymous %}
                 <input class="btn btn-secondary" disabled type="submit" value="Log in to Follow">
-            {% elif follower %}
+            {% elif is_follower %}
                 <input class="btn btn-secondary" type="submit" value="Unfollow">
             {% else %}
                 <input class="btn btn-primary" type="submit" value="Follow">

@@ -50,27 +50,27 @@ def index(request):
 def profile_view(request, user_pk):
     if request.method == "POST":
         user = request.user
-        follows = User.objects.get(pk=user_pk)
+        profile = User.objects.get(pk=user_pk)
 
         if user.is_anonymous:
             return render(request, "network/error.html", {
                 "error": "You must be logged in to follow a user."
             })
-        elif not follows:
+        elif not profile:
             return render(request, "network/error.html", {
                 "error": "User to follow does not exist."
             })
-        elif user.pk == follows.pk:
+        elif user.pk == profile.pk:
             return render(request, "network/error.html", {
-                "error": "User to follow does not exist."
+                "error": "You can't follow yourself."
             })
 
-        follower = Follower.objects.filter(user=user, follows=follows)
+        follower = Follower.objects.filter(user=user, follows=profile)
 
         if follower.exists():
             follower.delete()
         else:
-            follower = Follower(user=user, follows=follows)
+            follower = Follower(user=user, follows=profile)
             follower.save()
 
         return HttpResponseRedirect(reverse("profile_view", args=[user_pk]))
@@ -87,15 +87,20 @@ def profile_view(request, user_pk):
         posts = Post.objects.filter(user=profile).order_by("-timestamp")
 
         if user.is_authenticated:
-            follower = Follower.objects.filter(user=user, follows=profile).exists()
+            is_follower = Follower.objects.filter(user=user, follows=profile).exists()
         else:
-            follower = False
+            is_follower = False
+
+        follower_count = Follower.objects.filter(follows=profile).count()
+        following_count = Follower.objects.filter(user=profile).count()
 
         return render(request, "network/profile.html", {
             "user": user,
             "profile": profile,
             "posts": posts,
-            "follower": follower
+            "is_follower": is_follower,
+            "follower_count": follower_count,
+            "following_count": following_count
         })
 
 
