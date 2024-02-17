@@ -9,7 +9,13 @@
             <h5>New Post</h5>
             <textarea class="form-control" name="content" required cols="30"
                       rows="3"></textarea>
-            <div>{{ message }}</div>
+
+            {% if message %}
+                <div class="alert alert-{{ alert }} my-2" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+
             {% if user.is_anonymous %}
                 <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">
             {% else %}
@@ -19,11 +25,23 @@
     </div>
 
     {% for post in posts %}
-        <div class="m-2 p-2 border rounded">
-            <h5>{{ post.user }}</h5>
-            <p>{{ post.content }}</p>
-            <p>{{ post.timestamp }}</p>
-            <p>{{ post.likes }}</p>
+        {#        <div class="m-2 p-2 border rounded">#}
+        {#            <h5>{{ post.user }}</h5>#}
+        {#            <p>{{ post.content }}</p>#}
+        {#            <p>{{ post.timestamp }}</p>#}
+        {#            <p>{{ post.likes }}</p>#}
+        {#        </div>#}
+        <div class="m-2 card">
+            <div class="card-body">
+                <h5 class="card-title">{{ post.user }}</h5>
+                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                <p class="card-text">{{ post.content }}</p>
+                <div class="d-flex" style="height: 1.85rem;">
+                    <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
+                    <div class="align-self-center m-2">{{ post.likes }}</div>
+                </div>
+                <button class="btn btn-primary mt-2">Comment</button>
+            </div>
         </div>
     {% empty %}
         <h5>No Posts</h5>

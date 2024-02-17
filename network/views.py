@@ -8,32 +8,39 @@ from .models import User, Post
 
 
 def index(request):
+    posts = Post.objects.all()
+    user = request.user
+
     if request.method == "POST":
         user = request.user
         if user.is_anonymous:
             return render(request, "network/index.html", {
-                "posts": Post.objects.all(),
-                "user": request.user,
+                "posts": posts,
+                "user": user,
+                "alert": "danger",
                 "message": "You must be logged in to post."
             })
 
         content = request.POST.get('content')
         if not content:
             return render(request, "network/index.html", {
-                "posts": Post.objects.all(),
-                "user": request.user,
+                "posts": posts,
+                "user": user,
+                "alert": "danger",
                 "message": "Post content cannot be empty."
             })
 
         post = Post(user=user, content=content)
         post.save()
 
-        return HttpResponseRedirect(reverse("index"))
+        return render(request, "network/index.html", {
+            "posts": posts,
+            "user": user,
+            "alert": "success",
+            "message": "Post added successfully!"
+        })
 
     else:
-        posts = Post.objects.all()
-        user = request.user
-
         return render(request, "network/index.html", {
             "posts": posts,
             "user": user
