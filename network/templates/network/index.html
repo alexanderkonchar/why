@@ -1,5 +1,31 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    TODO
+    <h1 class="m-2">All Posts</h1>
+
+    <div class="m-2 p-2 border rounded">
+        <form action="{% url 'index' %}" method="POST">
+            {% csrf_token %}
+            <h5>New Post</h5>
+            <textarea class="form-control" name="content" required cols="30"
+                      rows="3"></textarea>
+            <div>{{ message }}</div>
+            {% if user.is_anonymous %}
+                <input class="btn btn-secondary mt-2" disabled type="submit" value="Log in to Post">
+            {% else %}
+                <input class="btn btn-primary mt-2" type="submit" value="Post">
+            {% endif %}
+        </form>
+    </div>
+
+    {% for post in posts %}
+        <div class="m-2 p-2 border rounded">
+            <h5>{{ post.user }}</h5>
+            <p>{{ post.content }}</p>
+            <p>{{ post.timestamp }}</p>
+            <p>{{ post.likes }}</p>
+        </div>
+    {% empty %}
+        <h5>No Posts</h5>
+    {% endfor %}
 {% endblock %}
