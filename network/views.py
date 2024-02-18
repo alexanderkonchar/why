@@ -174,13 +174,34 @@ def profile_view_pagination(request, user_pk, page_number):
 
 @login_required
 def following_view(request):
+    return following_view_pagination(request, 1)
+
+
+@login_required
+def following_view_pagination(request, page_number):
     user = request.user
     people_you_follow = Follower.objects.filter(user=user).values("follows")
 
-    posts = Post.objects.filter(user__in=people_you_follow)
+    pages = Paginator(Post.objects.filter(user__in=people_you_follow), 10)
+    num_pages = range(1, pages.num_pages + 1)
+
+    posts = pages.page(page_number)
+    if posts.has_next():
+        next_page_number = posts.next_page_number()
+    else:
+        next_page_number = None
+    if posts.has_previous():
+        previous_page_number = posts.previous_page_number()
+    else:
+        previous_page_number = None
+
+    posts = posts.object_list
 
     return render(request, "network/following.html", {
         "posts": posts,
+        "num_pages": num_pages,
+        "next_page_number": next_page_number,
+        "previous_page_number": previous_page_number
     })
 
 
