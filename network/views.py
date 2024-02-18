@@ -10,10 +10,10 @@ from .models import User, Post, Follower
 
 
 def index(request):
-    return page(request, 1)
+    return index_pagination(request, 1)
 
 
-def page(request, page_number):
+def index_pagination(request, page_number):
     user = request.user
 
     pages = Paginator(Post.objects.all().order_by("-timestamp"), 10)
@@ -96,6 +96,10 @@ def page(request, page_number):
 
 
 def profile_view(request, user_pk):
+    return profile_view_pagination(request, user_pk, 1)
+
+
+def profile_view_pagination(request, user_pk, page_number):
     if request.method == "POST":
         user = request.user
         profile = User.objects.get(pk=user_pk)
@@ -132,7 +136,20 @@ def profile_view(request, user_pk):
                 "error": "404 User not found."
             }, status=404)
 
-        posts = Post.objects.filter(user=profile).order_by("-timestamp")
+        pages = Paginator(Post.objects.filter(user=profile).order_by("-timestamp"), 10)
+        num_pages = range(1, pages.num_pages + 1)
+
+        posts = pages.page(page_number)
+        if posts.has_next():
+            next_page_number = posts.next_page_number()
+        else:
+            next_page_number = None
+        if posts.has_previous():
+            previous_page_number = posts.previous_page_number()
+        else:
+            previous_page_number = None
+
+        posts = posts.object_list
 
         if user.is_authenticated:
             is_follower = Follower.objects.filter(user=user, follows=profile).exists()
@@ -148,7 +165,10 @@ def profile_view(request, user_pk):
             "posts": posts,
             "is_follower": is_follower,
             "follower_count": follower_count,
-            "following_count": following_count
+            "following_count": following_count,
+            "num_pages": num_pages,
+            "next_page_number": next_page_number,
+            "previous_page_number": previous_page_number
         })
 
 
