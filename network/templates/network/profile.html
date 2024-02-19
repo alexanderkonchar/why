@@ -1,10 +1,17 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block title %}
     {{ profile.username }}'s Profile
 {% endblock %}
 
 {% block body %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <script src="{% static 'network/edit-post.js' %}"></script>
+    
+    
     <h1 class="my-2 mx-4">{{ profile.username }}</h1>
 
     <div class="d-flex m-2">
@@ -37,33 +44,72 @@
         <div class="m-2 card">
             <div class="card-body">
                 <h4 class="card-title "><strong>{{ post.user }}</strong></h4>
-                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
-                <p class="card-text mb-1">{{ post.content }}</p>
+
+                {% if post.edited %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }} (edited)</h6>
+                {% else %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                {% endif %}
+                <p class="post-content card-text mb-1">{{ post.content }}</p>
                 <div class="d-flex" style="height: 1.85rem;">
                     <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
                     <div class="align-self-center m-2">{{ post.likes }}</div>
                 </div>
-                <button class="btn btn-primary mt-2">Comment</button>
+                {% if post.user == user %}
+                    <button type="button" class="edit-post-button btn btn-primary mt-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editModal"
+                            data-post-pk="{{ post.pk }}">
+                        Edit
+                    </button>
+                {% endif %}
             </div>
         </div>
     {% empty %}
         <h5>No Posts</h5>
     {% endfor %}
 
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="editModalLabel">Edit Post</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form id="edit-post-form" method="POST">
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <input type="hidden" id="edit-post-pk" name="post-pk">
+                        <textarea id="edit-post-content" class="form-control" name="content" cols="30"
+                                  rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     {% if num_pages.stop > 2 %}
         <nav aria-label="Page navigation for posts">
             <ul class="pagination m-2">
                 {% if previous_page_number %}
-                    <li class="page-item"><a class="page-link" href="{% url 'profile/page' profile.pk previous_page_number %}">Previous</a>
+                    <li class="page-item"><a class="page-link"
+                                             href="{% url 'profile/page' profile.pk previous_page_number %}">Previous</a>
                     </li>
                 {% endif %}
 
                 {% for page in num_pages %}
-                    <li class="page-item"><a class="page-link" href="{% url 'profile/page' profile.pk page %}">{{ page }}</a></li>
+                    <li class="page-item"><a class="page-link"
+                                             href="{% url 'profile/page' profile.pk page %}">{{ page }}</a></li>
                 {% endfor %}
 
                 {% if next_page_number %}
-                    <li class="page-item"><a class="page-link" href="{% url 'profile/page' profile.pk next_page_number %}">Next</a>
+                    <li class="page-item"><a class="page-link"
+                                             href="{% url 'profile/page' profile.pk next_page_number %}">Next</a>
                     </li>
                 {% endif %}
             </ul>
