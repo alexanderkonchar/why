@@ -1,10 +1,14 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block title %}
     People you Follow
 {% endblock %}
 
 {% block body %}
+    <script src="{% static 'network/like-post.js' %}"></script>
+
+
     <h1 class="my-2 mx-4">People you Follow</h1>
 
     {% for post in posts %}
@@ -13,11 +17,18 @@
                 <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title ">
                     <strong>{{ post.user }}</strong></h4>
                 </a>
-                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
-                <p class="card-text mb-1">{{ post.content }}</p>
+
+                {% if post.edited %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }} (edited)</h6>
+                {% else %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                {% endif %}
+                <p class="post-content card-text mb-1">{{ post.content }}</p>
                 <div class="d-flex" style="height: 1.85rem;">
-                    <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
-                    <div class="align-self-center m-2">{{ post.likes }}</div>
+                    <button class="like-post-button btn btn-outline-secondary p-1" data-post-pk="{{ post.pk }}"
+                            style="border: none;">❤
+                    </button>
+                    <div class="like-count align-self-center m-2">{{ post.likes }}</div>
                 </div>
             </div>
         </div>

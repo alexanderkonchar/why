@@ -6,27 +6,7 @@
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
     <script src="{% static 'network/edit-post.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-                let likePostButtons = document.querySelectorAll('.like-post-button');
-
-                likePostButtons.forEach(button => {
-                        button.onclick = (event) => {
-                            fetch(`/like-post/${event.target.dataset.postPk}`, {
-                                    method: 'POST',
-                                }
-                            )
-                                .then(response => response.json())
-                                .then(result => {
-                                        event.target.parentNode.querySelector('.like-count').innerHTML = result.likes;
-                                    }
-                                );
-                        };
-                    }
-                );
-            }
-        );
-    </script>
+    <script src="{% static 'network/like-post.js' %}"></script>
 
 
     <h1 class="my-2 mx-4">All Posts</h1>
