@@ -1,10 +1,12 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Post, Follower
 
@@ -203,6 +205,30 @@ def following_view_pagination(request, page_number):
         "next_page_number": next_page_number,
         "previous_page_number": previous_page_number
     })
+
+
+def post_content(request, post_pk):
+    post = {"content": Post.objects.get(pk=post_pk).content}
+
+    return JsonResponse(post)
+
+
+@login_required
+@csrf_exempt
+def edit_post(request, post_pk):
+    user = request.user
+    data = json.loads(request.body)
+    content = data["content"]
+    post = Post.objects.get(pk=post_pk)
+
+    if not content:
+        return JsonResponse({"message": "Post content cannot be empty."})
+    elif post.user != user:
+        return JsonResponse({"message": "You can't edit someone else's post."})
+
+    Post.objects.filter(pk=post_pk).update(content=content, edited=True)
+
+    return JsonResponse({"message": "Post edited successfully."}, status=201)
 
 
 def login_view(request):

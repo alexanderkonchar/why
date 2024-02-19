@@ -4,6 +4,74 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+                let editPostButtons = document.querySelectorAll('.edit-post-button');
+                let editPostForm = document.querySelector('#edit-post-form');
+                let postPk;
+                let content;
+                let target;
+
+                editPostButtons.forEach(button => {
+                    button.onclick = (event) => {
+                        target = event.target;
+                        postPk = target.dataset.postPk;
+
+                        fetch(`/post-content/${postPk}`)
+                            .then(response => response.json())
+                            .then(post => {
+                                document.querySelector('#edit-post-content').innerHTML = post.content;
+                                document.querySelector('#edit-post-pk').value = postPk;
+                            });
+                    };
+                });
+
+                document.querySelector('#edit-post-content').onchange = (event) => {
+                    content = event.target.value
+                }
+
+                editPostForm.onsubmit = () => {
+                    fetch(`/edit-post/${postPk}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            content: content,
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            let post = target.parentNode.querySelector('.post-content')
+
+                            if (result.message !== 'Post edited successfully.') {
+                                let error = document.createElement('div');
+                                error.innerHTML = `
+                                    <div class="my-2 alert alert-danger alert-dismissible fade show" role="alert">
+                                        ${result.message}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                `
+                                post.appendChild(error);
+                            } else {
+                                post.innerHTML = content;
+
+                                let editedBadge = document.createTextNode(' (edited)');
+                                target.parentNode.querySelector('.post-timestamp').appendChild(editedBadge);
+
+                                let success = document.createElement('div');
+                                success.innerHTML = `
+                                    <div class="my-2 alert alert-success alert-dismissible fade show" role="alert">
+                                        ${result.message}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                `
+                                post.appendChild(success);
+                            }
+                        });
+
+                    return false;
+                };
+            }
+        );
+    </script>
 
 
     <h1 class="my-2 mx-4">All Posts</h1>
@@ -38,18 +106,54 @@
                 <a class="link-dark" href="{% url 'profile' post.user.pk %}"><h4 class="card-title ">
                     <strong>{{ post.user }}</strong></h4>
                 </a>
-                <h6 class="card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
-                <p class="card-text mb-1">{{ post.content }}</p>
+
+                {% if post.edited %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }} (edited)</h6>
+                {% else %}
+                    <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }}</h6>
+                {% endif %}
+                <p class="post-content card-text mb-1">{{ post.content }}</p>
                 <div class="d-flex" style="height: 1.85rem;">
                     <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
                     <div class="align-self-center m-2">{{ post.likes }}</div>
                 </div>
-                <button class="btn btn-primary mt-2">Comment</button>
+                {% if post.user == user %}
+                    <button type="button" class="edit-post-button btn btn-primary mt-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editModal"
+                            data-post-pk="{{ post.pk }}">
+                        Edit
+                    </button>
+                {% endif %}
             </div>
         </div>
     {% empty %}
         <h5>No Posts</h5>
     {% endfor %}
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="editModalLabel">Edit Post</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form id="edit-post-form" method="POST">
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <input type="hidden" id="edit-post-pk" name="post-pk">
+                        <textarea id="edit-post-content" class="form-control" name="content" cols="30"
+                                  rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     {% if num_pages.stop > 2 %}
         <nav aria-label="Page navigation for posts">
