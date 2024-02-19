@@ -231,6 +231,15 @@ def edit_post(request, post_pk):
     return JsonResponse({"message": "Post edited successfully."}, status=201)
 
 
+@csrf_exempt
+def like_post(request, post_pk):
+    likes = Post.objects.filter(pk=post_pk).values("likes").first()["likes"] + 1
+
+    Post.objects.filter(pk=post_pk).update(likes=likes)
+
+    return JsonResponse({"likes": likes}, status=201)
+
+
 def login_view(request):
     if request.method == "POST":
 
