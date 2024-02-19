@@ -10,8 +10,9 @@
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
     <script src="{% static 'network/edit-post.js' %}"></script>
-    
-    
+    <script src="{% static 'network/like-post.js' %}"></script>
+
+
     <h1 class="my-2 mx-4">{{ profile.username }}</h1>
 
     <div class="d-flex m-2">
@@ -44,7 +45,6 @@
         <div class="m-2 card">
             <div class="card-body">
                 <h4 class="card-title "><strong>{{ post.user }}</strong></h4>
-
                 {% if post.edited %}
                     <h6 class="post-timestamp card-subtitle mb-2 text-secondary">{{ post.timestamp }} (edited)</h6>
                 {% else %}
@@ -52,8 +52,10 @@
                 {% endif %}
                 <p class="post-content card-text mb-1">{{ post.content }}</p>
                 <div class="d-flex" style="height: 1.85rem;">
-                    <button class="btn btn-outline-secondary p-1" style="border: none;">❤</button>
-                    <div class="align-self-center m-2">{{ post.likes }}</div>
+                    <button class="like-post-button btn btn-outline-secondary p-1" data-post-pk="{{ post.pk }}"
+                            style="border: none;">❤
+                    </button>
+                    <div class="like-count align-self-center m-2">{{ post.likes }}</div>
                 </div>
                 {% if post.user == user %}
                     <button type="button" class="edit-post-button btn btn-primary mt-2"
